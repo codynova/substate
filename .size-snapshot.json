@@ -1,0 +1,30 @@
+{
+  "substate.esm.js": {
+    "bundled": 2247,
+    "minified": 998,
+    "gzipped": 452,
+    "treeshaked": {
+      "rollup": {
+        "code": 53,
+        "import_statements": 38
+      },
+      "webpack": {
+        "code": 1108
+      }
+    }
+  },
+  "index.js": {
+    "bundled": 2247,
+    "minified": 998,
+    "gzipped": 452,
+    "treeshaked": {
+      "rollup": {
+        "code": 53,
+        "import_statements": 38
+      },
+      "webpack": {
+        "code": 1108
+      }
+    }
+  }
+}
