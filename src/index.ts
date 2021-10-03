@@ -10,42 +10,45 @@ import {
 const useIsoLayoutEffect =
 	typeof window === 'undefined' ? useEffect : useLayoutEffect
 
-const update = (
-	store: { [key: string]: any },
+const update = <S extends Record<string, any>>(
+	store: S,
 	key: string | undefined,
-	value: any
+	value: S[string] | S
 ) => {
 	if (key)
-		store[key] = typeof value === 'function' ? value(store[key]) : value
+		(store as any)[key] =
+			typeof value === 'function' ? value((store as any)[key]) : value
 	else store = typeof value === 'function' ? value(store) : value
 }
 
 let nextId = 0
 
-export const useCreateSubState = () => {
-	const storeRef = useRef<{ [key: string]: any }>({})
+export const useCreateSubState = <S extends Record<string, any>>({
+	initialValue,
+}: { initialValue?: S } = {}) => {
+	const storeRef = useRef<S>(initialValue || ({} as S))
 	const storeSubscriptions = useRef<{
 		[id: number]: React.DispatchWithoutAction
 	}>({})
-	const keySubscriptions = useRef<{
-		[key: string]: { [id: number]: React.DispatchWithoutAction }
-	}>({})
+	const keySubscriptions = useRef<
+		Record<string, { [id: number]: React.DispatchWithoutAction }>
+	>({})
 	const store = storeRef.current
 
-	const setStore = (key: string | undefined, value: any) => {
-		update(store, key, value)
+	const setStore = (key: string | undefined, value: S[string] | S) => {
+		update<S>(store, key, value)
 		const subscriptions = key
-			? keySubscriptions.current[key]
+			? keySubscriptions.current[key as string]
 			: storeSubscriptions.current
 		for (const id in subscriptions) {
 			subscriptions[id]()
 		}
 	}
 
-	const subscribe = (
+	const subscribe = <T>(
 		key: string | undefined,
 		forceRender: React.DispatchWithoutAction,
-		initialValue?: any
+		initialValue?: S[string] | S
 	) => {
 		nextId++
 
@@ -66,13 +69,10 @@ export const useCreateSubState = () => {
 
 export const SubStateContext = createContext<
 	ReturnType<typeof useCreateSubState>
->([] as any)
+>({} as any)
 export const SubStateProvider = SubStateContext.Provider
 
-export const useSubState = <T>(
-	key?: string,
-	initialValue?: T | ((state: T) => T)
-) => {
+export const useSubState = <T>(key?: string, initialValue?: T) => {
 	const { store, setStore, subscribe } = useContext(SubStateContext)
 	const [, forceRender] = useReducer((n: number) => n + 1, 0)
 	const hasRendered = useRef(false)
@@ -80,8 +80,8 @@ export const useSubState = <T>(
 		hasRendered.current = true
 		return subscribe(key, forceRender, initialValue)
 	}, [])
-	const setState = (v: any) => setStore(key, v)
-	let state = key ? store[key] : store
+	const setState = (value: T) => setStore(key, value)
+	let state = (key ? store[key] : store) as T
 	if (!hasRendered.current && initialValue !== undefined) {
 		state = initialValue
 	}
