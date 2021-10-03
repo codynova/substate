@@ -11,29 +11,29 @@ const useIsoLayoutEffect =
 	typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 const update = (
-	state: { [key: string]: any },
+	store: { [key: string]: any },
 	key: string | undefined,
 	value: any
 ) => {
 	if (key)
-		state[key] = typeof value === 'function' ? value(state[key]) : value
-	else state = typeof value === 'function' ? value(state) : value
+		store[key] = typeof value === 'function' ? value(store[key]) : value
+	else store = typeof value === 'function' ? value(store) : value
 }
 
 let nextId = 0
 
 export const useCreateSubState = () => {
-	const stateRef = useRef<{ [key: string]: any }>({})
+	const storeRef = useRef<{ [key: string]: any }>({})
 	const storeSubscriptions = useRef<{
 		[id: number]: React.DispatchWithoutAction
 	}>({})
 	const keySubscriptions = useRef<{
 		[key: string]: { [id: number]: React.DispatchWithoutAction }
 	}>({})
-	const state = stateRef.current
+	const store = storeRef.current
 
-	const setState = (key: string | undefined, value: any) => {
-		update(state, key, value)
+	const setStore = (key: string | undefined, value: any) => {
+		update(store, key, value)
 		const subscriptions = key
 			? keySubscriptions.current[key]
 			: storeSubscriptions.current
@@ -49,7 +49,7 @@ export const useCreateSubState = () => {
 	) => {
 		nextId++
 
-		if (initialValue !== undefined) update(state, key, initialValue)
+		if (initialValue !== undefined) update(store, key, initialValue)
 
 		if (!key) {
 			storeSubscriptions.current[nextId] = forceRender
@@ -61,11 +61,7 @@ export const useCreateSubState = () => {
 		return () => void delete keySubscriptions.current[key][nextId]
 	}
 
-	return [state, setState, subscribe] as [
-		typeof state,
-		typeof setState,
-		typeof subscribe
-	]
+	return { store, setStore, subscribe }
 }
 
 export const SubStateContext = createContext<
@@ -77,18 +73,18 @@ export const useSubState = <T>(
 	key?: string,
 	initialValue?: T | ((state: T) => T)
 ) => {
-	const [subState, setSubState, subscribe] = useContext(SubStateContext)
+	const { store, setStore, subscribe } = useContext(SubStateContext)
 	const [, forceRender] = useReducer((n: number) => n + 1, 0)
 	const hasRendered = useRef(false)
 	useIsoLayoutEffect(() => {
 		hasRendered.current = true
 		return subscribe(key, forceRender, initialValue)
 	}, [])
-	const setState = (v: T) => setSubState(key, v)
-	let state = key ? subState[key] : subState
+	const setState = (v: any) => setStore(key, v)
+	let state = key ? store[key] : store
 	if (!hasRendered.current && initialValue !== undefined) {
 		state = initialValue
 	}
 
-	return [state, setState] as [T, React.Dispatch<React.SetStateAction<T>>]
+	return { state, setState, store }
 }

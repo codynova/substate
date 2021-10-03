@@ -1,8 +1,8 @@
 {
   "substate.esm.js": {
-    "bundled": 2247,
-    "minified": 998,
-    "gzipped": 452,
+    "bundled": 2245,
+    "minified": 1071,
+    "gzipped": 481,
     "treeshaked": {
       "rollup": {
         "code": 53,

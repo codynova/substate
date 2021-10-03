@@ -29,7 +29,7 @@ const Parent = ({ children }) => {
 }
 
 const Child = ({ id, children }) => {
-	const [state, setState] = useSubState(id)
+	const { state, setState, store } = useSubState(id)
 	const renderCount = useRef(0)
 	useEffect(() => void renderCount.current++)
 	return (
@@ -56,22 +56,45 @@ const Page = () => (
 
 ## Usage
 
-1. Create the api with `useCreateSubState` and pass it to a `SubStateProvider`
-
-2. Create and subscribe to keyed values in the store from a child component. Multiple components can subscribe to the same key.
+1. `useCreateSubState` to create the store api and pass it to a `SubStateProvider`
 
 ```jsx
-const [state, setState] = useSubState('test')
+import { useCreateSubState, SubStateProvider } from '@novas/substate'
+
+const MyComponent = ({ children }) => {
+	const api = useCreateSubState()
+	return <SubStateProvider value={api}>{children}</SubStateProvider>
+}
 ```
 
-3. Subscribe to the entire store by passing `undefined` for the key:
+2. `useSubState` to create and subscribe to keyed values in the store from a child component. Multiple components can subscribe to the same key.
 
 ```jsx
-const [state, setState] = useSubState()
+const { state, setState } = useSubState('test')
 ```
 
-4. Optionally pass an initial value. If two components with the same key both pass an initial value, the component that mounts
-   second will overwrite the first. This works for individual keys, or the entire store (in which case the initial value must be an object).
+3. `useSubState` also returns the entire store. It will only cause re-renders when the store value with that specific key changes.
+
+```jsx
+const { state, setState, store } = useSubState('test')
+// state === store.test
+```
+
+4. `setState` accepts a value or a merging function, just like React.
+
+```jsx
+setState({ hello: 'world' })
+setState((currentState) => currentState++)
+```
+
+5. `useSubState` without a key will subscribe to the entire store. This will cause re-renders any time a value in the store changes, and allow setting the entire store with `setState`. **The store must be an object**
+
+```jsx
+const { state, setState, store } = useSubState()
+// state === store
+```
+
+6. `useSubState` accepts an optional initial value. If two components with the same key have different initial values, the component that mounts later will overwrite the first. This works for individual keys, or the entire store. **The store must be an object**
 
 ```jsx
 const [state, setState] = useSubState(undefined, { test: 1 })

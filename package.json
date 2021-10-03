@@ -1,6 +1,6 @@
 {
 	"name": "@novas/substate",
-	"version": "0.0.1-alpha.1",
+	"version": "0.0.1-alpha.2",
 	"description": "1kb subscription-based state hooks for React",
 	"module": "dist/substate.esm.js",
 	"repository": "https://github.com/codynova/substate",
