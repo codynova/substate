@@ -1,8 +1,9 @@
 {
 	"name": "@novas/substate",
-	"version": "0.0.1-alpha.3",
+	"version": "0.0.1-alpha.4",
 	"description": "1kb subscription-based state hooks for React",
 	"module": "dist/substate.esm.js",
+	"types": "dist/index.d.ts",
 	"repository": "https://github.com/codynova/substate",
 	"author": "Cody Persinger <codypersinger@gmail.com> (https://github.com/codynova)",
 	"license": "MIT",
